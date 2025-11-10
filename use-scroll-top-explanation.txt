@@ -1,0 +1,43 @@
+Bu dosya, `useScrollTop` adında özel bir React "hook"u (kancası) tanımlar. Bu hook'un temel amacı, 
+kullanıcının sayfayı belirli bir eşik değerinden (threshold) daha fazla aşağı kaydırıp kaydırmadığını takip etmektir. 
+Bu, genellikle sayfa aşağı kaydırıldığında bir üstbilgi (header) çubuğunun görünümünü değiştirmek veya bir "başa dön" düğmesi göstermek gibi UI (kullanıcı arayüzü) değişiklikleri için kullanılır.
+
+Kodun adımları şu şekildedir:
+
+1.  **Gerekli Hook'ların İçe Aktarılması:**
+    *   `import { useState, useEffect } from "react";`
+    *   `useState`: Bileşen içinde durum (state) tutmak için kullanılır. Bu durumda, sayfanın kaydırılıp kaydırılmadığı bilgisini (`true`/`false`) tutar.
+    *   `useEffect`: Bileşenin yaşam döngüsüyle ilgili yan etkileri (side effects) yönetmek için kullanılır. 
+    Burada, sayfa yüklendiğinde bir olay dinleyicisi (event listener) eklemek ve bileşen kaldırıldığında bu dinleyiciyi temizlemek için kullanılır.
+
+2.  **`useScrollTop` Hook'unun Tanımlanması:**
+    *   `export const useScrollTop = (threshold = 10) => { ... }`
+    *   `useScrollTop` adında bir fonksiyon oluşturulur ve dışa aktarılır.
+    *   `threshold = 10` parametresi, ne kadar piksellik bir kaydırmadan sonra durumun değişeceğini belirtir. Eğer bu hook kullanılırken bir değer verilmezse, varsayılan olarak `10` piksel kullanılır.
+
+3.  **Durum (State) Tanımlaması:**
+    *   `const[scrolled, setScrolled] = useState(false);`
+    *   `scrolled` adında bir durum değişkeni oluşturulur. Başlangıç değeri `false` olarak ayarlanır, çünkü sayfa ilk yüklendiğinde henüz kaydırma yapılmamıştır.
+    *   `setScrolled`, bu `scrolled` değişkeninin değerini güncellemek için kullanılacak fonksiyondur.
+
+4.  **Yan Etki (Side Effect) Yönetimi:**
+    *   `useEffect(() => { ... }, [threshold]);`
+    *   Bu hook, bileşen DOM'a eklendikten sonra çalışır.
+    *   `[threshold]` bağımlılık dizisi, eğer `threshold` değeri değişirse bu `useEffect`'in yeniden çalışmasını sağlar.
+
+5.  **Kaydırma Olayını Dinleme:**
+    *   `const handleScroll = () => { ... }`
+    *   `handleScroll` adında bir fonksiyon tanımlanır. Bu fonksiyon, her kaydırma olayında çalışacaktır.
+    *   `if(window.scrollY > threshold)`: Tarayıcı penceresinin dikey kaydırma miktarının (`window.scrollY`) belirlenen `threshold` değerinden büyük olup olmadığını kontrol eder.
+    *   Eğer büyükse, `setScrolled(true)` çağrılarak `scrolled` durumu `true` yapılır.
+    *   Değilse, `setScrolled(false)` ile `false` yapılır.
+
+6.  **Olay Dinleyicisinin Eklenmesi ve Kaldırılması:**
+    *   `window.addEventListener("scroll", handleScroll);`
+    *   Pencerenin `scroll` (kaydırma) olayına `handleScroll` fonksiyonunu bir dinleyici olarak ekler. Artık kullanıcı sayfayı her kaydırdığında `handleScroll` fonksiyonu tetiklenir.
+    *   `return () => window.removeEventListener("scroll", handleScroll);`
+    *   Bu, `useEffect`'in temizleme (cleanup) fonksiyonudur. Bileşen ekrandan kaldırıldığında (unmount), bellekte sızıntı olmasını önlemek için eklenmiş olan `scroll` dinleyicisini kaldırır. Bu, React'te performans ve bellek yönetimi için çok önemli bir pratiktir.
+
+7.  **Değerin Döndürülmesi:**
+    *   `return scrolled;`
+    *   Hook, en güncel `scrolled` durumunu (`true` veya `false`) döndürür. Böylece bu hook'u kullanan herhangi bir bileşen, sayfanın kaydırılıp kaydırılmadığı bilgisine anlık olarak erişebilir.
